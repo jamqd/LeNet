@@ -1,24 +1,36 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-    <head>
-        <meta charset="utf-8">
-        <title>LeNet-5 Demo</title>
 
-        <style media="screen">
+<head>
+    <meta charset="utf-8">
+    <title>LeNet-5 Demo</title>
 
-        </style>
+    <!-- Load TensorFlow.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.13.0"> </script>
 
-    </head>
+    <script>
+    // async function processModel(){
+    //     const model = await tf.loadModel("https://www.johndang.me/MLProjects/test/model.json");
+    //     console.log(model);
+    //     model.predict();
+    //     console.log("test");
+    // }
+    // processModel();
+    </script>
 
-    <body onload="init()">
-        <a id = "array" href="cvtest.html">cvtest</a>
-        <canvas id="can" width="140" height="140" style="position:absolute;top:10%;left:10%;border:1px solid;"></canvas>
-        <!-- <img id="canvasimg" style="position:absolute;top:50%;left:10%;" style="display:none;"> -->
-        <canvas id="can2" width="140" height="140" style="position:absolute;top:50%;left:10%;border:1px solid;"></canvas>
-        <input type="button" value="Classify" id="btn" size="30" onclick="save()">
-        <input type="button" value="Clear" id="clr" size="23" onclick="erase()">
+</head>
 
-        <script type="text/javascript">
+<body onload="init()">
+    <a id="array" href="cvtest.html">cvtest</a>
+    <canvas id="can" width="140" height="140" style="position:absolute;top:10%;left:10%;border:1px solid;"></canvas>
+    <!-- <img id="canvasimg" style="position:absolute;top:50%;left:10%;" style="display:none;"> -->
+    <canvas id="can2" width="140" height="140" style="position:absolute;top:50%;left:10%;border:1px solid;"></canvas>
+    <input type="button" value="Classify" id="btn" size="30" onclick="save()">
+    <input type="button" value="Clear" id="clr" size="23" onclick="erase()">
+
+    <script type="text/javascript">
+        // const model = tf.loadModel('/test/model.json');
+        // console.log("test");
         var canvas, ctx, flag = false,
             prevX = 0,
             currX = 0,
@@ -35,16 +47,16 @@
             w = canvas.width;
             h = canvas.height;
 
-            canvas.addEventListener("mousemove", function (e) {
+            canvas.addEventListener("mousemove", function(e) {
                 findxy('move', e)
             }, false);
-            canvas.addEventListener("mousedown", function (e) {
+            canvas.addEventListener("mousedown", function(e) {
                 findxy('down', e)
             }, false);
-            canvas.addEventListener("mouseup", function (e) {
+            canvas.addEventListener("mouseup", function(e) {
                 findxy('up', e)
             }, false);
-            canvas.addEventListener("mouseout", function (e) {
+            canvas.addEventListener("mouseout", function(e) {
                 findxy('out', e)
             }, false);
         }
@@ -73,21 +85,24 @@
             getData();
 
             let mat = cv.imread('can');
-            cv.imshow('can2', mat);
+            let size = new cv.Size(28,28);
+            let dst = new cv.Mat();
+            cv.resize(mat, dst, size);
+            cv.imshow('can2', dst);
             mat.delete();
         }
 
-        function getData(){
+        function getData() {
             var imgData = ctx.getImageData(0, 0, w, h);
             console.log(imgData.data.length)
             return reshapeData2D(imgData.data);
         }
 
-        function reshapeData2D(imgData){
+        function reshapeData2D(imgData) {
             dataRe = [];
-            for (i = 0; i < 280; i++){
+            for (i = 0; i < 280; i++) {
                 tempRow = [];
-                for (j = 0; j < 280; j++){
+                for (j = 0; j < 280; j++) {
                     tempRow.push([imgData[280 * i + j]])
                 }
                 dataRe.push(tempRow);
@@ -96,23 +111,37 @@
             console.log("Dimensions: (" + dataRe.length + ", " + dataRe[0].length + ", " + dataRe[0][0].length + ")");
             reshapeData4D(imgData);
         }
-        function reshapeData4D(imgData){
+
+        function reshapeData4D(imgData) {
             /*
                 Returns reshaped data into 1 x height x width x 1 array
             */
             dataRe = []
-            for (i = 0; i < 280; i++){
+            for (i = 0; i < 280; i++) {
 
                 //tempRow = imgData.slice(i * 280, i * 280 + 280);
                 tempRow = [];
-                for (j = 0; j < 280; j++){
+                for (j = 0; j < 280; j++) {
                     tempRow.push([imgData[280 * i + j]])
                 }
                 dataRe.push(tempRow);
             }
             dataRe = [dataRe];
             console.log("Dimensions: (" + dataRe.length + ", " + dataRe[0].length + ", " + dataRe[0][0].length + ", " + dataRe[0][0][0].length + ")")
+            // const model = tf.loadModel('/test/model.json');
+            // model.predict(dataRe);
+            // console.log("test");
+            processModel(dataRe);
             return dataRe;
+        }
+
+        async function processModel(data){
+            const model = await tf.loadModel("https://www.johndang.me/MLProjects/test/model.json");
+            console.log(model);
+            console.log("Dimensions: (" + data.length + ", " + data[0].length + ", " + data[0][0].length + ", " + data[0][0][0].length + ")")
+            const a = model.predict(data);
+            console.log(a)
+            console.log("test");
         }
         function findxy(res, e) {
             if (res == 'down') {
@@ -144,7 +173,8 @@
                 }
             }
         }
-        </script>
-        <script src="opencv.js" type="text/javascript"></script>
-    </body>
+    </script>
+    <script src="opencv.js" type="text/javascript"></script>
+</body>
+
 </html>
