@@ -1,2 +1,1 @@
-# MLProjects
-Personal machine learning projects
+# LeNet 5 for MNIST Digits Dataset
